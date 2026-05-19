@@ -1,0 +1,129 @@
+<!--
+  Copyright F5, Inc. 2026
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Financial Advisor Multi-Agent Demo</title>
+    <link rel="stylesheet" href="/ui-static/styles.css?v=20260518b" />
+  </head>
+  <body>
+    <div class="bg-shape shape-a"></div>
+    <div class="bg-shape shape-b"></div>
+
+    <main class="layout">
+      <header class="hero">
+        <p class="hero-kicker">Live Multi-Agent Workflow</p>
+        <h1>Financial Advisor Multi-Agent Demo</h1>
+        <p class="hero-subtitle">Trace how agents coordinate, call tools, and return advisory outcomes through one shared session id.</p>
+      </header>
+
+      <div class="workspace">
+        <section class="panel chat-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Advisor Assistant</h2>
+              <p class="panel-subtitle">Prompt/response flow with one trace id per run.</p>
+            </div>
+            <div class="trace-meta">
+              <div class="trace-chip">
+                <span>Trace</span>
+                <code id="traceId">-</code>
+              </div>
+              <div id="guardrailStatus" class="guardrail-status status-unknown">
+                <span class="dot" aria-hidden="true"></span>
+                <span id="guardrailStatusText">unknown</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-nav" role="tablist" aria-label="Assistant tabs">
+            <button id="tabChatBtn" class="tab-btn active" type="button" data-tab="chat" role="tab">Chat</button>
+            <button id="tabPromptsBtn" class="tab-btn" type="button" data-tab="prompts" role="tab">Prompt Library</button>
+          </div>
+
+          <div id="chatTab" class="tab-panel active" role="tabpanel">
+            <div class="chat-stream" id="chatStream">
+              <div class="chat-empty" id="chatEmpty">
+                Enter an advisory request to start the assistant flow.
+              </div>
+            </div>
+
+            <div class="composer">
+              <label for="customRequest">Message</label>
+              <textarea id="customRequest" rows="4">Build an investment recommendation for a client with EUR 250000 and moderate risk tolerance. Compare product options, run risk checks, review disclosures, and prepare a draft recommendation.</textarea>
+              <div class="row">
+                <button id="runCustomBtn">Send Request</button>
+                <button id="clearChatBtn" class="secondary" type="button">Clear Chat</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="promptsTab" class="tab-panel" role="tabpanel">
+            <p class="panel-subtitle">Optional canned prompts for copy/paste during demos.</p>
+            <div id="promptLibrary" class="prompt-library"></div>
+          </div>
+        </section>
+
+        <aside class="panel topology-panel">
+          <div class="panel-head">
+            <div>
+              <h2>MAS Architecture</h2>
+              <p class="panel-subtitle">A clear run-path from user prompt to final advisory response.</p>
+            </div>
+          </div>
+
+          <div class="topology-controls" aria-label="Topology zoom controls">
+            <button id="zoomOutBtn" class="secondary icon-btn" type="button" aria-label="Zoom out">−</button>
+            <span id="topologyZoomLabel" class="zoom-label">100%</span>
+            <button id="zoomInBtn" class="secondary icon-btn" type="button" aria-label="Zoom in">+</button>
+            <button id="zoomResetBtn" class="secondary" type="button">Reset</button>
+            <button id="toggleGuardrailCallsBtn" class="secondary" type="button">Hide Guardrail Calls</button>
+          </div>
+
+          <section class="topology-stage" id="topologyStage">
+            <div id="topologyCanvas" class="topology-canvas">
+              <div id="topologyScene" class="topology-scene">
+                <svg id="topologySvg" viewBox="0 0 1000 700" preserveAspectRatio="none" aria-hidden="true">
+                  <defs>
+                    <marker id="arrowHead" markerWidth="10" markerHeight="8" refX="8" refY="4" orient="auto">
+                      <path d="M0,0 L10,4 L0,8 z" fill="#4b8677"></path>
+                    </marker>
+                  </defs>
+                </svg>
+                <div id="topologyNodes"></div>
+              </div>
+            </div>
+            <div id="nodePopover" class="node-popover" role="dialog" aria-live="polite" hidden>
+              <button id="nodePopoverClose" class="popover-close" type="button" aria-label="Close details">×</button>
+              <div class="popover-eyebrow">Component Role</div>
+              <h4 id="nodePopoverTitle">Node</h4>
+              <p id="nodePopoverSummary">Summary</p>
+            </div>
+          </section>
+
+          <div class="topology-grid">
+            <article>
+              <h3>Execution Path</h3>
+              <ol id="flowSteps" class="flow-steps"></ol>
+            </article>
+          </div>
+        </aside>
+        </div>
+    </main>
+
+    <script src="/ui-static/app.js?v=20260518b"></script>
+  </body>
+</html>
