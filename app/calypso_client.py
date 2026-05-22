@@ -156,7 +156,7 @@ class CalypsoChatClient:
         agent_name: str,
         trace_id: str,
     ) -> dict[str, Any]:
-        message = completion.choices[0].message
+        message = self._first_message_from_completion(completion)
         guardrail_outcome = self._extract_guardrail_outcome_from_completion(completion)
         payload: dict[str, Any] = {
             "role": "assistant",
@@ -403,8 +403,18 @@ class CalypsoChatClient:
         outcome = cls._extract_guardrail_outcome_from_node(dumped)
         if outcome:
             return outcome
-        message = completion.choices[0].message if getattr(completion, "choices", None) else None
+        message = cls._first_message_from_completion(completion)
         return cls._extract_guardrail_outcome_from_node(getattr(message, "model_extra", None))
+
+    @staticmethod
+    def _first_message_from_completion(completion: Any) -> Any | None:
+        choices = getattr(completion, "choices", None)
+        if not isinstance(choices, list) or not choices:
+            return None
+        first = choices[0]
+        if first is None:
+            return None
+        return getattr(first, "message", None)
 
     @classmethod
     def _extract_guardrail_outcome_from_node(cls, node: Any) -> str | None:
