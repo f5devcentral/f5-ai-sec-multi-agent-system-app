@@ -1406,6 +1406,12 @@ button.secondary {
   background: #0a1422;
 }
 
+button.red-team-toggle {
+  color: #ffb7b7;
+  border-color: rgba(255, 93, 93, 0.5);
+  background: rgba(72, 14, 20, 0.72);
+}
+
 button:hover,
 button.secondary:hover {
   box-shadow: 0 0 0 1px rgba(69, 140, 255, 0.16), 0 12px 28px rgba(0, 0, 0, 0.26);
@@ -1590,16 +1596,16 @@ button.secondary:hover {
 
 .topology-node.kind-tool,
 .topology-node.kind-tool-child {
-  color: #d9e8ff;
-  border-color: rgba(69, 140, 255, 0.56);
-  background: rgba(21, 48, 90, 0.38);
+  color: #f5d49a;
+  border-color: rgba(191, 126, 45, 0.62);
+  background: rgba(69, 42, 17, 0.48);
 }
 
 .topology-node.kind-tool .topology-node-icon,
 .topology-node.kind-tool-child .topology-node-icon {
-  color: #69a2ff;
-  border-color: rgba(69, 140, 255, 0.48);
-  background: rgba(69, 140, 255, 0.1);
+  color: #e2a64a;
+  border-color: rgba(201, 132, 43, 0.56);
+  background: rgba(216, 123, 27, 0.12);
 }
 
 .topology-node.kind-memory {
@@ -1618,6 +1624,24 @@ button.secondary:hover {
   color: #94c4ff !important;
   border-color: rgba(69, 140, 255, 0.48) !important;
   background: rgba(25, 58, 102, 0.32) !important;
+}
+
+.topology-node.kind-red-team {
+  color: #ffe7e7;
+  border-color: rgba(255, 93, 93, 0.78);
+  background:
+    radial-gradient(140px 70px at 24% 28%, rgba(255, 93, 93, 0.22), transparent 74%),
+    linear-gradient(180deg, rgba(91, 18, 27, 0.98), rgba(42, 8, 15, 0.99));
+  box-shadow:
+    0 0 0 1px rgba(255, 93, 93, 0.32),
+    0 0 34px rgba(255, 93, 93, 0.25),
+    0 18px 42px rgba(0, 0, 0, 0.42);
+}
+
+.topology-node.kind-red-team .topology-node-icon {
+  color: #ff9d9d;
+  border-color: rgba(255, 125, 125, 0.66);
+  background: rgba(36, 5, 11, 0.8);
 }
 
 .topology-node.selected,
@@ -1643,6 +1667,12 @@ button.secondary:hover {
 .topology-edge.edge-guardrail,
 .topology-edge.edge-guardrail-live {
   stroke: #458cff;
+}
+
+.topology-edge.edge-red-team {
+  stroke: #ff5d5d;
+  stroke-width: 2.2;
+  stroke-dasharray: 8 6;
 }
 
 .topology-edge-label-bg {

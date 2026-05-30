@@ -23,6 +23,7 @@
     runtimeLlmNodeId: null,
     runtimeTriggeredToolNodeIds: new Set(),
     showGuardrailOverlay: false,
+    showRedTeamOverlay: false,
     topologyZoom: 0.8,
     conversationId: null,
     runProgressIndex: -1,
@@ -251,6 +252,15 @@
         "</svg>"
       );
     }
+    if (icon === "red_team") {
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M12 3l7 4v5.2c0 4.6-2.8 7.5-7 8.8-4.2-1.3-7-4.2-7-8.8V7l7-4z"></path>' +
+        '<path d="M8.4 9.4l7.2 7.2"></path>' +
+        '<path d="M15.6 9.4l-7.2 7.2"></path>' +
+        "</svg>"
+      );
+    }
     return (
       '<svg viewBox="0 0 24 24" aria-hidden="true">' +
       '<rect x="4.5" y="5" width="15" height="14" rx="2.5"></rect>' +
@@ -368,6 +378,8 @@
         "Customer-visible answer returned to UI/API, including recommendation, required approvals, and actions taken.",
       f5_guardrails:
         "All LLM turns route through F5 AI Guardrails via OpenAI-compatible /chat/completions with the shared trace_id in x-cai-metadata-session-id for enforcement and traceability.",
+      red_team:
+        "External red-team module connected to the orchestrator entry point. Used to inject adversarial probes and validate how the agent workflow behaves under attack simulation.",
     };
 
     const baseNodes = [
@@ -464,6 +476,21 @@
           orchestrator_calls: orchestratorCallCount,
           tool_agent_calls: toolAgentCallCount,
           final_agent_calls: finalAgentCallCount,
+        },
+      },
+      {
+        id: "red_team_module",
+        label: "Red Team Module",
+        icon: "red_team",
+        kind: "red-team",
+        x: 455,
+        y: 35,
+        active: true,
+        redTeamOverlay: true,
+        meta: {
+          role_summary: roleSummary.red_team,
+          hook_point: "advisor_orchestrator",
+          mode: "Adversarial probe source",
         },
       },
       {
@@ -569,6 +596,15 @@
         label: "direct",
         active: !hasToolPhase,
         secondary: true,
+      },
+      {
+        id: "e_red_team_orchestrator",
+        source: "red_team_module",
+        target: "orchestrator",
+        label: "probe",
+        active: true,
+        secondary: true,
+        redTeamOverlay: true,
       },
       {
         id: "e_guardrail_orchestrator",
@@ -679,6 +715,7 @@
       "topology-edge",
       edge.secondary ? "edge-secondary" : "",
       edge.guardrailOverlay ? "edge-guardrail" : "",
+      edge.redTeamOverlay ? "edge-red-team" : "",
       isRuntimeEdge ? "edge-live" : "",
       isGuardrailLive ? "edge-guardrail-live" : "",
       isTriggeredToolEdge ? "edge-tool-triggered" : "",
@@ -687,16 +724,16 @@
       .filter(Boolean)
       .join(" ");
     line.setAttribute("class", className);
-    const path = edge.guardrailOverlay
+    const path = edge.guardrailOverlay || edge.redTeamOverlay
       ? curvedPath(source, target, edge.secondary ? -44 : 44)
       : elbowPath(source, target);
     line.setAttribute("d", path);
     svg.appendChild(line);
 
-    const midX = edge.guardrailOverlay
+    const midX = edge.guardrailOverlay || edge.redTeamOverlay
       ? (source.x + target.x) / 2
       : edgeLabelPoint(source, target).x;
-    const midY = edge.guardrailOverlay
+    const midY = edge.guardrailOverlay || edge.redTeamOverlay
       ? (source.y + target.y) / 2
       : edgeLabelPoint(source, target).y;
     const dx = target.x - source.x;
@@ -770,7 +807,11 @@
     svg.querySelectorAll(".topology-edge, .topology-edge-label-group").forEach((item) => item.remove());
     nodeLayer.innerHTML = "";
 
-    const visibleNodes = topology.nodes.filter((node) => state.showGuardrailOverlay || !node.guardrailOverlay);
+    const visibleNodes = topology.nodes.filter((node) => {
+      if (node.guardrailOverlay && !state.showGuardrailOverlay) return false;
+      if (node.redTeamOverlay && !state.showRedTeamOverlay) return false;
+      return true;
+    });
     const visibleNodeIds = new Set(visibleNodes.map((node) => String(node.id)));
     const visibleEdges = topology.edges.filter(
       (edge) => visibleNodeIds.has(String(edge.source)) && visibleNodeIds.has(String(edge.target))
@@ -1020,6 +1061,12 @@
     toggleBtn.textContent = state.showGuardrailOverlay ? "Hide Guardrail Calls" : "Show Guardrail Calls";
   }
 
+  function updateRedTeamToggleButton() {
+    const toggleBtn = el("toggleRedTeamBtn");
+    if (!toggleBtn) return;
+    toggleBtn.textContent = state.showRedTeamOverlay ? "Hide Red Team" : "Show Red Team";
+  }
+
   function renderTopology(result) {
     state.conversationId = result.conversation_id || state.conversationId;
     state.topology = buildStoryTopology(result);
@@ -1042,6 +1089,7 @@
     renderRunProgress();
     hideNodePopover();
     updateGuardrailToggleButton();
+    updateRedTeamToggleButton();
   }
 
   function renderInitialTopology() {
@@ -1061,6 +1109,7 @@
     renderRunProgress();
     hideNodePopover();
     updateGuardrailToggleButton();
+    updateRedTeamToggleButton();
   }
 
   function activateRuntimeNode(nodeId) {
@@ -1454,6 +1503,7 @@
     const zoomInBtn = el("zoomInBtn");
     const zoomResetBtn = el("zoomResetBtn");
     const toggleGuardrailCallsBtn = el("toggleGuardrailCallsBtn");
+    const toggleRedTeamBtn = el("toggleRedTeamBtn");
 
     runCustomBtn.addEventListener("click", async () => {
       runCustomBtn.disabled = true;
@@ -1510,11 +1560,20 @@
         hideNodePopover();
       });
     }
+    if (toggleRedTeamBtn) {
+      toggleRedTeamBtn.addEventListener("click", () => {
+        state.showRedTeamOverlay = !state.showRedTeamOverlay;
+        drawTopology();
+        updateRedTeamToggleButton();
+        hideNodePopover();
+      });
+    }
 
     renderInitialTopology();
     applyTopologyZoom(TOPOLOGY_ZOOM_DEFAULT, false);
     bindTopologyPinchZoom();
     renderRunProgress();
+    updateRedTeamToggleButton();
 
     try {
       await loadScenarios();
