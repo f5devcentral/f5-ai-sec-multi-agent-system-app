@@ -1626,6 +1626,20 @@ button.secondary:hover {
   background: rgba(25, 58, 102, 0.32) !important;
 }
 
+.topology-node.kind-model {
+  color: #d7e8ff;
+  border-color: rgba(95, 170, 255, 0.58);
+  background:
+    radial-gradient(130px 70px at 22% 30%, rgba(69, 140, 255, 0.2), transparent 76%),
+    linear-gradient(180deg, rgba(12, 43, 83, 0.94), rgba(6, 21, 43, 0.98));
+}
+
+.topology-node.kind-model .topology-node-icon {
+  color: #9fcbff;
+  border-color: rgba(107, 177, 255, 0.58);
+  background: rgba(5, 18, 38, 0.82);
+}
+
 .topology-node.kind-red-team {
   color: #ffe7e7;
   border-color: rgba(255, 93, 93, 0.78);

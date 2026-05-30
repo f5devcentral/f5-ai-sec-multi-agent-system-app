@@ -252,6 +252,16 @@
         "</svg>"
       );
     }
+    if (icon === "model") {
+      return (
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<rect x="4" y="5" width="16" height="14" rx="3"></rect>' +
+        '<path d="M8 9h8"></path>' +
+        '<path d="M8 13h5"></path>' +
+        '<circle cx="17" cy="16" r="1.2"></circle>' +
+        "</svg>"
+      );
+    }
     if (icon === "red_team") {
       return (
         '<svg viewBox="0 0 24 24" aria-hidden="true">' +
@@ -378,6 +388,8 @@
         "Customer-visible answer returned to UI/API, including recommendation, required approvals, and actions taken.",
       f5_guardrails:
         "All LLM turns route through F5 AI Guardrails via OpenAI-compatible /chat/completions with the shared trace_id in x-cai-metadata-session-id for enforcement and traceability.",
+      llm_model:
+        "Underlying chat-completions model endpoint. F5 Guardrails mediates requests and responses before the agent receives model output.",
       red_team:
         "External red-team module connected to the orchestrator entry point. Used to inject adversarial probes and validate how the agent workflow behaves under attack simulation.",
     };
@@ -476,6 +488,21 @@
           orchestrator_calls: orchestratorCallCount,
           tool_agent_calls: toolAgentCallCount,
           final_agent_calls: finalAgentCallCount,
+        },
+      },
+      {
+        id: "llm_model",
+        label: "LLM Model",
+        icon: "model",
+        kind: "model",
+        x: 1035,
+        y: 120,
+        active: true,
+        guardrailOverlay: true,
+        meta: {
+          role_summary: roleSummary.llm_model,
+          model: interactions[0]?.response_message?._meta?.model || "configured model",
+          total_guarded_calls: interactions.length,
         },
       },
       {
@@ -605,6 +632,14 @@
         active: true,
         secondary: true,
         redTeamOverlay: true,
+      },
+      {
+        id: "e_guardrail_model",
+        source: "f5_guardrails",
+        target: "llm_model",
+        label: interactions.length > 0 ? `model x${interactions.length}` : "model",
+        active: interactions.length > 0,
+        guardrailOverlay: true,
       },
       {
         id: "e_guardrail_orchestrator",
