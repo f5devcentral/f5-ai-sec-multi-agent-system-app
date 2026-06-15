@@ -100,6 +100,66 @@
     return `${text.slice(0, maxLen)}...`;
   }
 
+  function isGeneralConversationRequest(value) {
+    const text = String(value || "").toLowerCase().trim().replace(/\s+/g, " ");
+    if (!text) return true;
+    const greetings = new Set([
+      "hi",
+      "hello",
+      "hey",
+      "hi there",
+      "hello there",
+      "good morning",
+      "good afternoon",
+      "good evening",
+    ]);
+    const capabilityQuestions = [
+      "what can you do",
+      "what do you do",
+      "who are you",
+      "help",
+      "how can you help",
+      "what are your capabilities",
+    ];
+    return greetings.has(text) || capabilityQuestions.some((question) => text === question || text === `${question}?`);
+  }
+
+  function generalConversationResult(userRequest) {
+    const finalAnswer =
+      "Hi, I am the Advisor Assistant. I can help compare investment products, assess risk and suitability, review disclosures, and prepare draft recommendations.\n\n" +
+      "Supported workflow: Try: Build an investment recommendation for a client with EUR 250000, compare options, assess risk and suitability, and prepare a draft recommendation.";
+    return {
+      trace_id: `local-${Date.now()}`,
+      conversation_id: state.conversationId || `local-${Date.now()}`,
+      scenario_id: null,
+      red_team_mode: false,
+      user_request: userRequest,
+      generated_plan: {
+        route: "out_of_scope",
+        plan_summary: "Request is outside financial advisory workflow scope.",
+        steps: [],
+        decision_notes: ["No advisory-specific tools or specialist agents were invoked."],
+        out_of_scope_response:
+          "Hi, I am the Advisor Assistant. I can help compare investment products, assess risk and suitability, review disclosures, and prepare draft recommendations.",
+      },
+      tool_calls: [],
+      tool_results: [],
+      blocked_or_redacted_events: [],
+      final_answer: finalAnswer,
+      recommendation: {
+        response_mode: "out_of_scope",
+        request_summary: userRequest,
+        message:
+          "Hi, I am the Advisor Assistant. I can help compare investment products, assess risk and suitability, review disclosures, and prepare draft recommendations.",
+        suggested_next_request:
+          "Try: Build an investment recommendation for a client with EUR 250000, compare options, assess risk and suitability, and prepare a draft recommendation.",
+      },
+      model_interactions: [],
+      mcp_activity: [],
+      guardrail_status: "clear",
+    };
+  }
+
   function normalizeGuardrailStatus(status) {
     const raw = String(status || "").toLowerCase().trim();
     if (raw === "blocked") return "blocked";
@@ -1338,6 +1398,15 @@
     if (!userRequest) return;
 
     addMessage("user", userRequest, metaText);
+    if (!options.scenario_id && !options.red_team_mode && isGeneralConversationRequest(userRequest)) {
+      const body = generalConversationResult(userRequest);
+      renderGuardrailStatus("clear");
+      renderTopology(body);
+      addMessage("assistant", body.final_answer, "assistant");
+      scrollChatToBottom();
+      return;
+    }
+
     const pendingBubble = addMessage("assistant", "Running advisor workflow...", "assistant • pending");
     pendingBubble.classList.add("pending");
     renderGuardrailStatus("unknown");
