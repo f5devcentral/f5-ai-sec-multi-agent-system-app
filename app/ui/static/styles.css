@@ -2237,6 +2237,23 @@ textarea {
   background: rgba(30, 15, 5, 0.9);
 }
 
+/* Keep long assistant outputs reachable inside the fixed-height chat rail. */
+#chatTab.tab-panel.active {
+  min-height: 0;
+}
+
+.chat-stream {
+  min-height: 0;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  align-content: start;
+}
+
+.bubble {
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 1260px) {
   html,
   body {
