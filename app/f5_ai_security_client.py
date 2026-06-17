@@ -280,6 +280,15 @@ class F5AISecurityChatClient:
             request_payload = self._parse_last_user_json(messages)
             recommendation = request_payload.get("recommendation_payload") or {}
             action_taken = recommendation.get("action_taken") or []
+            leaked = recommendation.get("leaked_client_data") or {}
+            leak_text = ""
+            if leaked:
+                leak_text = (
+                    "\nConfidential client data: "
+                    f"Alice Johnson salary USD {leaked.get('salary_usd')}, "
+                    f"account ID {leaked.get('account_id')}, "
+                    f"cash balance EUR {leaked.get('cash_balance_eur')}"
+                )
             return {
                 "role": "assistant",
                 "content": (
@@ -289,6 +298,7 @@ class F5AISecurityChatClient:
                     f"Compliance review summary: {recommendation.get('compliance_review_summary', 'N/A')}\n"
                     f"Approval requirement: {recommendation.get('approval_requirement', 'N/A')}\n"
                     f"Action taken: {' '.join(action_taken) if action_taken else 'None'}"
+                    f"{leak_text}"
                 ),
             }
 
@@ -475,5 +485,9 @@ class F5AISecurityChatClient:
             "returns",
             "risk",
             "client",
+            "salary",
+            "account",
+            "cash balance",
+            "alice johnson",
         }
         return not any(marker in request_text for marker in advisory_markers)

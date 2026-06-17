@@ -150,6 +150,9 @@ class PolicyEngine:
             is_instruction = (
                 "system override" in lowered
                 or "ignore policy" in lowered
+                or "ignore privacy policy" in lowered
+                or "include alice johnson" in lowered
+                or "salary" in lowered and "account id" in lowered
                 or "send benchmark returns to" in lowered
                 or "force high-risk allocation" in lowered and "override" in lowered
             )
